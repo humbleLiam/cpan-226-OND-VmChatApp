@@ -39,6 +39,8 @@ DEMO : https://www.youtube.com/watch?v=vReAkOq-59I
 • The chat interface should dynamically update with the most recent messages.
 • All the conversation should be stored in a file or database in chronological order
 
+## Creating instance : https://www.youtube.com/watch?v=PZiiBJox1-o
+
 
 ## VM instance - Windows 10.iso file 
 Instal. 

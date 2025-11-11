@@ -45,6 +45,3 @@ DEMO : https://www.youtube.com/watch?v=vReAkOq-59I
 ## VM instance - Windows 10.iso file 
 Instal. 
 https://www.microsoft.com/en-us/software-download/windows10
-
-
-testing the command

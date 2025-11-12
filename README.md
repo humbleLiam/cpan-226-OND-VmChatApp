@@ -3,7 +3,7 @@
 ### CURRENT WORKING BRANCHES
 MAIN 
 DEV1 -- Liams Branch
-DEV2 -- summers branch
+DEV2 -- samars branch
 
 Using git
 initializeing repo command:

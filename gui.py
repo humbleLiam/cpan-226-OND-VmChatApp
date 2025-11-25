@@ -58,7 +58,7 @@ class ChatGUI:
 
         # Select first contact by default
         self.contact_listbox.selection_set(0)
-        self.contact_listbox.bind("<<ListboxSelect>>", self.on_contact_select)
+        #self.contact_listbox.bind("<<ListboxSelect>>", self.on_contact_select)
 
         # -------- Right: Main chat area --------
         main_area = tk.Frame(self.root, bg="#e5e7eb")
@@ -174,38 +174,11 @@ class ChatGUI:
             activeforeground="white",
             cursor="hand2"
         )
-<<<<<<< HEAD
-        self.send_button.pack(side=tk.RIGHT, padx=(5, 0))
+        self.send_button.grid(row=1,column=1, padx=(5, 0))
         
-
+    
         self.poll_incoming()
         
-=======
-        self.send_button.grid(row=0, column=1)
-
-        # Initial welcome message
-        self.add_message("Welcome to the chat!", sender="bot")
-
-    # ---------- Contact selection ----------
-
-    def on_contact_select(self, event):
-        selection = self.contact_listbox.curselection()
-        if not selection:
-            return
-
-        index = selection[0]
-        self.current_contact = self.contacts[index]
-        self.contact_name_label.config(text=self.current_contact)
-        self.contact_info_label.config(
-            text=self.contact_details.get(self.current_contact, "")
-        )
-
-        # Optional: small system-style message when switching
-        self.add_message(f"You are now chatting with {self.current_contact}.", "bot")
-
-    # ---------- Message handling & rendering ----------
-
->>>>>>> 15fb91510008c04d96fc979f252bf5b82059b461
     def add_message(self, message, sender="user"):
         """Add a message to the chat display as a bubble with timestamp & date separators."""
         self.chat_display.config(state="normal")
@@ -227,25 +200,10 @@ class ChatGUI:
             ts_tag = "timestamp_right"
             name = "You"
         else:
-<<<<<<< HEAD
             self.chat_display.insert(tk.END, "Peer: ", "peer")
         self.chat_display.insert(tk.END, f"{message}\n\n")
         
         # Auto-scroll to bottom
-=======
-            bubble_tag = "bot_bubble"
-            ts_tag = "timestamp_left"
-            name = self.current_contact
-
-        # Name + message as a "bubble"
-        self.chat_display.insert(tk.END, f"{name}\n", bubble_tag)
-        self.chat_display.insert(tk.END, f"{message}\n", bubble_tag)
-        # Time under the bubble
-        self.chat_display.insert(tk.END, f"{time_str}\n", ts_tag)
-        self.chat_display.insert(tk.END, "\n")
-
-        # Auto-scroll
->>>>>>> 15fb91510008c04d96fc979f252bf5b82059b461
         self.chat_display.see(tk.END)
         self.chat_display.config(state="disabled")
 
@@ -259,33 +217,12 @@ class ChatGUI:
 
             # Clear input
             self.message_input.delete(0, tk.END)
-<<<<<<< HEAD
             
             # Simulate bot response (replace with your logic)
+            self.conn.send(message)
     
     def poll_incoming(self):
         msg = self.conn.receive()
         if msg:
             self.add_message(msg, "peer")
         self.root.after(100, self.poll_incoming)
-=======
-
-            # Simulate response
-            self.handle_bot_response(message)
-
-    def handle_bot_response(self, user_message):
-        """Handle bot's response to user message."""
-        # You can replace this with your actual chat logic
-        response = f"{self.current_contact} says: You said -> {user_message}"
-        self.add_message(response, "bot")
-
-
-def main():
-    root = tk.Tk()
-    app = ChatGUI(root)
-    root.mainloop()
-
-
-if __name__ == "__main__":
-    main()
->>>>>>> 15fb91510008c04d96fc979f252bf5b82059b461

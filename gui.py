@@ -3,8 +3,9 @@ from tkinter import scrolledtext
 from datetime import datetime
 
 class ChatGUI:
-    def __init__(self, root):
+    def __init__(self, root, connection):
         self.root = root
+        self.conn = connection
         self.root.title("Chat Interface")
         self.root.geometry("500x600")
         
@@ -45,8 +46,8 @@ class ChatGUI:
         )
         self.send_button.pack(side=tk.RIGHT, padx=(5, 0))
         
-        # Welcome message
-        self.add_message("Welcome to the chat!", "bot")
+
+        self.poll_incoming()
         
     def add_message(self, message, sender="user"):
         """Add a message to the chat display"""
@@ -60,8 +61,7 @@ class ChatGUI:
         if sender == "user":
             self.chat_display.insert(tk.END, "You: ", "user")
         else:
-            self.chat_display.insert(tk.END, "Bot: ", "bot")
-        
+            self.chat_display.insert(tk.END, "Peer: ", "peer")
         self.chat_display.insert(tk.END, f"{message}\n\n")
         
         # Auto-scroll to bottom
@@ -80,18 +80,9 @@ class ChatGUI:
             self.message_input.delete(0, tk.END)
             
             # Simulate bot response (replace with your logic)
-            self.handle_bot_response(message)
     
-    def handle_bot_response(self, user_message):
-        """Handle bot's response to user message"""
-        # Replace this with your actual chat logic
-        response = f"You said: {user_message}"
-        self.add_message(response, "bot")
-
-def main():
-    root = tk.Tk()
-    app = ChatGUI(root)
-    root.mainloop()
-
-if __name__ == "__main__":
-    main()  
+    def poll_incoming(self):
+        msg = self.conn.receive()
+        if msg:
+            self.add_message(msg, "peer")
+        self.root.after(100, self.poll_incoming)

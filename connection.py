@@ -86,6 +86,9 @@ class Connection():
             test_sock.connect((self.peer_ip, self.port))
             test_sock.close()
             print(f"[FIND] Found peer server!")
+            # Give server time to clean up the test connection
+            import time
+            time.sleep(0.2)
             return True
         except:
             test_sock.close()
@@ -138,4 +141,3 @@ class Connection():
                 return False
         
         return False
-    

@@ -65,7 +65,9 @@ class Connection():
         
         try:
             self.sock.connect((self.peer_ip, self.port))
-            print(f"[CLIENT] Connected immediately!")
+            # Don't set self.connected = True here!
+            # Let confirmConnection() verify the connection is ready
+            print(f"[CLIENT] Connection initiated...")
         except BlockingIOError:
             print(f"[CLIENT] Connection in progress...")
         except Exception as e:
@@ -74,7 +76,7 @@ class Connection():
     def findSocket(self):
         print(f"[FIND] Searching for peer at {self.peer_ip}:{self.port}...")
         test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        test_sock.settimeout(0.5)
+        test_sock.settimeout(2)
         
         try:
             test_sock.connect((self.peer_ip, self.port))
@@ -112,17 +114,37 @@ class Connection():
                 print(f"\n[CONNECTION] ✓ Client connected from {addr}\n")
                 return True
             except BlockingIOError:
+                # Silently return False - no connection yet
+                return False
+            except Exception as e:
+                print(f"[DEBUG] Server accept error: {e}")
                 return False
         
         if self.mode == 'client':
             try:
-                err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                if err == 0:
+                # Try a non-blocking recv with MSG_PEEK to test connection
+                # This doesn't remove data from the queue
+                self.sock.recv(1, socket.MSG_PEEK)
+                # If we get here, socket is connected
+                if not self.connected:
                     self.connected = True
                     print(f"\n[CONNECTION] ✓ Client connection established!\n")
-                    return True
+                return True
+            except BlockingIOError:
+                # No data yet, but connection might be ready
+                # Check error code as fallback
+                try:
+                    err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+                    if err == 0:
+                        if not self.connected:
+                            self.connected = True
+                            print(f"\n[CONNECTION] ✓ Client connection established!\n")
+                        return True
+                except:
+                    pass
                 return False
-            except:
+            except Exception as e:
+                # Connection not ready or failed
                 return False
         
         return False

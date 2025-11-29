@@ -126,29 +126,16 @@ class Connection():
         
         if self.mode == 'client':
             try:
-                # Try a non-blocking recv with MSG_PEEK to test connection
-                # This doesn't remove data from the queue
-                self.sock.recv(1, socket.MSG_PEEK)
-                # If we get here, socket is connected
-                if not self.connected:
-                    self.connected = True
-                    print(f"\n[CONNECTION] ✓ Client connection established!\n")
-                return True
-            except BlockingIOError:
-                # No data yet, but connection might be ready
-                # Check error code as fallback
-                try:
-                    err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                    if err == 0:
-                        if not self.connected:
-                            self.connected = True
-                            print(f"\n[CONNECTION] ✓ Client connection established!\n")
-                        return True
-                except:
-                    pass
+                # Just check the socket error status
+                err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+                if err == 0:
+                    if not self.connected:
+                        self.connected = True
+                        print(f"\n[CONNECTION] ✓ Client connection established!\n")
+                    return True
                 return False
             except Exception as e:
-                # Connection not ready or failed
                 return False
         
         return False
+    

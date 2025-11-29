@@ -2,8 +2,6 @@ import socket
 
 class Connection():
     def __init__(self,peer_ip, port=5000):
-
-
         #socket intialization tcp/  
         self.sock = None
         self.connection = None
@@ -12,13 +10,13 @@ class Connection():
         self.port = port
         self.connected = False
 
-
-        if not self.findSocket():
+        my_ip = self.getIp()
+        if my_ip <peer_ip:
+            self.mode ='server'
             self.startServer()
-            self.mode = 'server'
         else:
-            self.setUpClient()
             self.mode = 'client'
+            self.setUpClient()
 
 
     def send(self, message):
@@ -61,28 +59,12 @@ class Connection():
         self.sock.setblocking(False) 
         try:
             self.sock.connect((self.peer_ip, self.port))
-            self.connected = True 
         except BlockingIOError:
             print(f"connecting to server")
         except Exception as e:
             print(f"error -{e}")
 
-    def findSocket (self):
-        # to do write a function that looks for tcp connection on netwok with ack request. 
-        test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        test_sock.settimeout(2)  
-        
-        try:
-            #try to connect to peer
-            test_sock.connect((self.peer_ip, self.port))
-            test_sock.close()
-            print(f"Found peer server at {self.peer_ip}:{self.port}")
-            return True  # Peer is listening we'll be client
-        except:
-            test_sock.close()
-            return False # no peer listening
-        
-    def is_connected(self):
+    def isConnected(self):
         return self.connected
 
     def close(self):
@@ -115,11 +97,21 @@ class Connection():
             try:
                 err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
                 if err == 0:
-                    self.connected = True
-                    print(f"Client connection established!")
+                    if not self.connected:
+                        self.connected = True
+                        print(f"Client connection established!")
                     return True
                 return False
             except:
                 return False
         
         return False
+    def getIp(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except:
+            return "192.168.100.255"

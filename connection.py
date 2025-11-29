@@ -65,7 +65,6 @@ class Connection():
         
         try:
             self.sock.connect((self.peer_ip, self.port))
-            self.connected = True
             print(f"[CLIENT] Connected immediately!")
         except BlockingIOError:
             print(f"[CLIENT] Connection in progress...")

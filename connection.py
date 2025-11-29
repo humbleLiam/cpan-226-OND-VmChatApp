@@ -1,4 +1,5 @@
 import socket
+import time
 
 class Connection():
     def __init__(self, peer_ip, port=5000):
@@ -9,13 +10,27 @@ class Connection():
         self.peer_ip = peer_ip
         self.port = port
         self.connected = False
+        self.setup_attempted = False
 
-        if not self.findSocket():
-            self.startServer()
+        # Determine role based on IP (lower IP = server)
+        my_ip = self.get_my_ip()
+        if my_ip < peer_ip:
             self.mode = 'server'
+            self.startServer()
         else:
-            self.setUpClient()
             self.mode = 'client'
+            self.setUpClient()
+    
+    def get_my_ip(self):
+        """Get local IP address."""
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except:
+            return "192.168.100.255"  # Fallback to high IP
 
     def send(self, message):
         print(f"\n[SEND] >>> Sending message: '{message}'")
@@ -26,12 +41,10 @@ class Connection():
     
         try:
             target = self.connection if self.mode == 'server' else self.sock
-            print(f"[DEBUG SEND] Mode: {self.mode}, using socket: {target}")
             target.sendall(message.encode())
             print(f"[SEND] ✓ Message sent successfully!\n")
         except Exception as e:
             print(f"[SEND] ✗ Send error: {e}\n")
-            print(f"[DEBUG] Mode: {self.mode}, self.connection: {self.connection}, self.sock: {self.sock}")
 
     def receive(self):
         if not self.confirmConnection():
@@ -39,7 +52,6 @@ class Connection():
         
         try:
             target = self.connection if self.mode == 'server' else self.sock
-            print(f"[DEBUG RECEIVE] Mode: {self.mode}, using socket: {target}")
             data = target.recv(1024)
             if data:
                 decoded = data.decode()
@@ -48,8 +60,10 @@ class Connection():
         except BlockingIOError:
             return None
         except Exception as e:
-            print(f"[RECEIVE] Error: {e}")
-            print(f"[DEBUG] Mode: {self.mode}, self.connection: {self.connection}, self.sock: {self.sock}")
+            # Only print error if we're supposedly connected
+            if self.connected:
+                print(f"[RECEIVE] Error: {e}")
+                self.connected = False
         return None
     
     def startServer(self):
@@ -69,36 +83,17 @@ class Connection():
         
         try:
             self.sock.connect((self.peer_ip, self.port))
-            # Don't set self.connected = True here!
-            # Let confirmConnection() verify the connection is ready
             print(f"[CLIENT] Connection initiated...")
         except BlockingIOError:
             print(f"[CLIENT] Connection in progress...")
         except Exception as e:
             print(f"[CLIENT] Connection error: {e}")
-
-    def findSocket(self):
-        print(f"[FIND] Searching for peer at {self.peer_ip}:{self.port}...")
-        test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        test_sock.settimeout(2)
-        
-        try:
-            test_sock.connect((self.peer_ip, self.port))
-            test_sock.close()
-            print(f"[FIND] Found peer server!")
-            # Give server time to clean up the test connection
-            import time
-            time.sleep(0.2)
-            return True
-        except:
-            test_sock.close()
-            print(f"[FIND] No peer found, becoming server")
-            return False
-        
+    
     def is_connected(self):
         return self.connected
 
     def close(self):
+        """Close the connection."""
         try:
             if self.connection:
                 self.connection.close()
@@ -121,7 +116,6 @@ class Connection():
                 print(f"\n[CONNECTION] ✓ Client connected from {addr}\n")
                 return True
             except BlockingIOError:
-                # Silently return False - no connection yet
                 return False
             except Exception as e:
                 print(f"[DEBUG] Server accept error: {e}")

@@ -75,7 +75,7 @@ class Connection():
     def findSocket(self):
         print(f"[FIND] Searching for peer at {self.peer_ip}:{self.port}...")
         test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        test_sock.settimeout(2)
+        test_sock.settimeout(0.5)
         
         try:
             test_sock.connect((self.peer_ip, self.port))

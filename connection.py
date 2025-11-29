@@ -26,10 +26,12 @@ class Connection():
     
         try:
             target = self.connection if self.mode == 'server' else self.sock
+            print(f"[DEBUG SEND] Mode: {self.mode}, using socket: {target}")
             target.sendall(message.encode())
             print(f"[SEND] ✓ Message sent successfully!\n")
         except Exception as e:
             print(f"[SEND] ✗ Send error: {e}\n")
+            print(f"[DEBUG] Mode: {self.mode}, self.connection: {self.connection}, self.sock: {self.sock}")
 
     def receive(self):
         if not self.confirmConnection():
@@ -37,6 +39,7 @@ class Connection():
         
         try:
             target = self.connection if self.mode == 'server' else self.sock
+            print(f"[DEBUG RECEIVE] Mode: {self.mode}, using socket: {target}")
             data = target.recv(1024)
             if data:
                 decoded = data.decode()
@@ -46,6 +49,7 @@ class Connection():
             return None
         except Exception as e:
             print(f"[RECEIVE] Error: {e}")
+            print(f"[DEBUG] Mode: {self.mode}, self.connection: {self.connection}, self.sock: {self.sock}")
         return None
     
     def startServer(self):

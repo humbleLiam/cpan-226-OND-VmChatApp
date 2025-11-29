@@ -18,21 +18,18 @@ class Connection():
             self.mode = 'client'
 
     def send(self, message):
-        print(f"[SEND] Called with message: '{message}'")
-        print(f"[SEND] Mode: {self.mode}, Connected: {self.connected}")
+        print(f"\n[SEND] >>> Sending message: '{message}'")
         
         if not self.confirmConnection():
-            print(f"[SEND] confirmConnection() returned False - cannot send")
+            print(f"[SEND] ✗ Not connected, cannot send")
             return
     
-        print(f"[SEND] Connection confirmed! Attempting to send...")
         try:
             target = self.connection if self.mode == 'server' else self.sock
-            print(f"[SEND] Target socket: {target}")
             target.sendall(message.encode())
-            print(f"[SEND] ✓ Message sent successfully!")
+            print(f"[SEND] ✓ Message sent successfully!\n")
         except Exception as e:
-            print(f"[SEND] ✗ Send error: {e}")
+            print(f"[SEND] ✗ Send error: {e}\n")
 
     def receive(self):
         if not self.confirmConnection():
@@ -43,7 +40,7 @@ class Connection():
             data = target.recv(1024)
             if data:
                 decoded = data.decode()
-                print(f"[RECEIVE] ✓ Received message: '{decoded}'")
+                print(f"\n[RECEIVE] <<< Got message: '{decoded}'\n")
                 return decoded
         except BlockingIOError:
             return None
@@ -71,7 +68,7 @@ class Connection():
             self.connected = True
             print(f"[CLIENT] Connected immediately!")
         except BlockingIOError:
-            print(f"[CLIENT] Connection in progress (non-blocking mode)")
+            print(f"[CLIENT] Connection in progress...")
         except Exception as e:
             print(f"[CLIENT] Connection error: {e}")
 
@@ -81,15 +78,14 @@ class Connection():
         test_sock.settimeout(2)
         
         try:
-            # Try to connect to peer
             test_sock.connect((self.peer_ip, self.port))
             test_sock.close()
-            print(f"[FIND] ✓ Found peer server at {self.peer_ip}:{self.port}")
-            return True  # Peer is listening, we'll be client
+            print(f"[FIND] Found peer server!")
+            return True
         except:
             test_sock.close()
-            print(f"[FIND] ✗ No peer found, becoming server")
-            return False  # No peer listening
+            print(f"[FIND] No peer found, becoming server")
+            return False
         
     def is_connected(self):
         return self.connected
@@ -104,41 +100,30 @@ class Connection():
             pass
 
     def confirmConnection(self):
-        print(f"[CONFIRM] Checking connection... Mode: {self.mode}, Connected: {self.connected}")
+        # QUIET MODE - only print when connection state changes
         
         if self.connected:
-            print(f"[CONFIRM] Already connected!")
             return True
         
         if self.mode == 'server' and not self.connection:
-            print(f"[CONFIRM] Server mode - trying to accept connection...")
-            # Try to accept incoming connection
             try:
                 self.connection, addr = self.sock.accept()
                 self.connection.setblocking(False)
                 self.connected = True
-                print(f"[CONFIRM] ✓ Client connected from {addr}")
+                print(f"\n[CONNECTION] ✓ Client connected from {addr}\n")
                 return True
             except BlockingIOError:
-                print(f"[CONFIRM] No incoming connection yet")
                 return False
         
         if self.mode == 'client':
-            print(f"[CONFIRM] Client mode - checking if connection completed...")
-            # Check if non-blocking connection completed
             try:
                 err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                print(f"[CONFIRM] Socket error code: {err}")
                 if err == 0:
                     self.connected = True
-                    print(f"[CONFIRM] ✓ Client connection established!")
+                    print(f"\n[CONNECTION] ✓ Client connection established!\n")
                     return True
-                else:
-                    print(f"[CONFIRM] Connection not ready yet (error: {err})")
-                    return False
-            except Exception as e:
-                print(f"[CONFIRM] Exception checking connection: {e}")
+                return False
+            except:
                 return False
         
-        print(f"[CONFIRM] Returning False")
         return False

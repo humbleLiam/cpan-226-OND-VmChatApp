@@ -23,22 +23,7 @@ class Connection():
 
     def send(self, message):
 
-        if self.mode =='server' and not self.connection:
-            try:
-                self.connection, address = self.sock.accept()
-                self.connection.setblocking(False)
-                self.connected = True
-            except BlockingIOError:
-                return
-        if self.mode == 'client' and not self.connected:
-            try:
-                err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                if err == 0:
-                    self.connected = True
-            except:
-                return  # Still connecting
-    
-        if not self.connected:
+        if not self.confirmConnection():
             return
     
         try:
@@ -49,27 +34,8 @@ class Connection():
 
 
     def receive(self):
-        # If server mode and no connection yet, try to accept
-        if self.mode == 'server' and not self.connection:
-            try:
-                self.connection, addr = self.sock.accept()
-                self.connection.setblocking(False)
-                self.connected = True
-                print(f"Client connected from {addr}")
-            except BlockingIOError:
-                return None  # No connection yet
-        
-        # If client mode and not connected yet, check connection status
-        if self.mode == 'client' and not self.connected:
-            try:
-                err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
-                if err == 0:
-                    self.connected = True
-            except:
-                return None  # Still connecting
-        
-        if not self.connected:
-            return None
+        if not self.confirmConnection():
+            return
         
         try:
             target = self.connection if self.mode == 'server' else self.sock
@@ -127,3 +93,33 @@ class Connection():
                 self.sock.close()
         except:
             pass
+
+
+    def confirmConnection(self):
+        if self.connected:
+            return True
+        
+        if self.mode == 'server' and not self.connection:
+            # Try to accept incoming connection
+            try:
+                self.connection, addr = self.sock.accept()
+                self.connection.setblocking(False)
+                self.connected = True
+                print(f"Client connected from {addr}")
+                return True
+            except BlockingIOError:
+                return False
+        
+        if self.mode == 'client':
+            # Check if non-blocking connection completed
+            try:
+                err = self.sock.getsockopt(socket.SOL_SOCKET, socket.SO_ERROR)
+                if err == 0:
+                    self.connected = True
+                    print(f"Client connection established!")
+                    return True
+                return False
+            except:
+                return False
+        
+        return False

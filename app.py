@@ -26,7 +26,7 @@ def main():
             conn.close()
             root.destroy()
 
-            
+
         waitForConnection()
         root.protocol("WM_DELETE_WINDOW", onClosing)
         root.mainloop()

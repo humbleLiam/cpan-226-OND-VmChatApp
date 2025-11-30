@@ -207,7 +207,7 @@ class ChatGUI:
             ts_tag = "timestamp_left"
             name = self.current_contact if self.current_contact else "Peer"
             db_sender ="peer"
-            
+
         if save_to_db and self.db and self.peer_ip:
             self.db.add_message(self.peer_ip, message, db_sender)
 
@@ -237,14 +237,19 @@ class ChatGUI:
         self.root.after(100, self.poll_incoming)
     def load_chat_history(self, ip_address):
         """Load chat history from database for a specific contact."""
+        print(f"Load-chat-history called")
         if not self.db:
             return
         
+        print(F"passes db check")
+
         # Get messages from database
         messages = self.db.get_messages(ip_address)
         
         if not messages:
             return
+        
+        print(f"passes message check")
         
         # Clear current display
         self.chat_display.config(state="normal")
@@ -257,6 +262,8 @@ class ChatGUI:
             sender = "user" if msg.sender == "me" else "peer"
             # Load without saving again (save_to_db=False)
             self.add_message_with_timestamp(msg.message_text, sender, msg.timestamp, save_to_db=False)
+
+        print(f"got to the for")
 
     def add_message_with_timestamp(self, message, sender, timestamp, save_to_db=False):
         """Add a message with a specific timestamp (for loading history)."""

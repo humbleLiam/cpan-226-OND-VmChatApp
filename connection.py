@@ -33,7 +33,7 @@ class Connection():
 
     def receive(self):
         if not self.confirmConnection():
-            return
+            return None
         
         try:
             target = self.connection if self.mode == 'server' else self.sock

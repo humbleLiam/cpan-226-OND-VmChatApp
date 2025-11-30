@@ -18,12 +18,15 @@ def main():
 
         def waitForConnection():
             print("DEBUG: waitForConnection running | isConnected =", conn.isConnected)
-            connection = conn.confirmConnection()
-            if connection:
+            connected = conn.confirmConnection()
+            if connected:
                 app.load_chat_history(peer_ip)
                 print("DEBUG: Connected detected, loading history...")
             else:
                 root.after(200,waitForConnection)
+
+        print("DEBUG: Scheduling waitForConnection")
+        root.after(0, waitForConnection)
 
         def onClosing():
             db.close()

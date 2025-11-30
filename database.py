@@ -50,11 +50,13 @@ class ChatDatabase:
         
         self.session.commit()
         return contact
+    
     def get_contact(self,ip_address):
         return self.session.query(Contact).filter_by(ip_address=ip_address).first()
     
     def get_all_contacts(self):
         return self.session.query(Contact).order_by(Contact.last_seen.desc()).all()
+ 
     def update_contact_name(self,ip_address, name):
         contact = self.get_contact(ip_address)
         if contact:

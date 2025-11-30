@@ -17,7 +17,7 @@ def main():
         app.add_contact(f"Peer ({peer_ip})")
 
         def waitForConnection():
-            print("DEBUG: waitForConnection running | isConnected =", conn.isConnected)
+            print("DEBUG: waitForConnection running | isConnected =")
             connected = conn.confirmConnection()
             if connected:
                 app.load_chat_history(peer_ip)

@@ -4,9 +4,11 @@ from datetime import datetime
 
 
 class ChatGUI:
-    def __init__(self, root, connection):
+    def __init__(self, root, connection, database=None, peer_ip=None):
         self.root = root
         self.conn = connection
+        self.db = database
+        self.peer_ip = peer_ip
         self.root.title("Chat Interface")
         self.root.geometry("800x600")
         self.root.configure(bg="#1f2933")
@@ -181,8 +183,7 @@ class ChatGUI:
 
     # ---------- Messages ----------
 
-    def add_message(self, message, sender="user"):
-        """Add a message to the chat display as a bubble with timestamp & date separators."""
+    def add_message(self, message, sender="user", save_to_db =True):
         self.chat_display.config(state="normal")
 
         now = datetime.now()
@@ -200,10 +201,15 @@ class ChatGUI:
             bubble_tag = "user_bubble"
             ts_tag = "timestamp_right"
             name = "You"
+            db_sender = "me"
         else:  # "peer"
             bubble_tag = "peer_bubble"
             ts_tag = "timestamp_left"
             name = self.current_contact if self.current_contact else "Peer"
+            db_sender ="peer"
+            
+        if save_to_db and self.db and self.peer_ip:
+            self.db.add_message(self.peer_ip, message, db_sender)
 
         # Name above bubble
         self.chat_display.insert(tk.END, f"{name}\n", bubble_tag)
@@ -217,10 +223,9 @@ class ChatGUI:
         self.chat_display.config(state="disabled")
 
     def send_message(self, event=None):
-        """Handle sending a message."""
         message = self.message_input.get().strip()
         if message:
-            self.add_message(message, "user")
+            self.add_message(message, "user", save_to_db=True)
             self.message_input.delete(0, tk.END)
             # send over your connection
             self.conn.send(message)
@@ -228,5 +233,59 @@ class ChatGUI:
     def poll_incoming(self):
         msg = self.conn.receive()
         if msg:
-            self.add_message(msg, "peer")
+            self.add_message(msg, "peer", save_to_db=True)
         self.root.after(100, self.poll_incoming)
+    def load_chat_history(self, ip_address):
+        """Load chat history from database for a specific contact."""
+        if not self.db:
+            return
+        
+        # Get messages from database
+        messages = self.db.get_messages(ip_address)
+        
+        if not messages:
+            return
+        
+        # Clear current display
+        self.chat_display.config(state="normal")
+        self.chat_display.delete(1.0, tk.END)
+        self.last_message_date = None
+        self.chat_display.config(state="disabled")
+        
+        # Display each message from history
+        for msg in messages:
+            sender = "user" if msg.sender == "me" else "peer"
+            # Load without saving again (save_to_db=False)
+            self.add_message_with_timestamp(msg.message_text, sender, msg.timestamp, save_to_db=False)
+
+    def add_message_with_timestamp(self, message, sender, timestamp, save_to_db=False):
+        """Add a message with a specific timestamp (for loading history)."""
+        self.chat_display.config(state="normal")
+
+        time_str = timestamp.strftime("%I:%M %p").lstrip("0")
+        date_str = timestamp.strftime("%B %d, %Y")
+
+        # Date separator
+        if date_str != self.last_message_date:
+            if self.chat_display.index("end-1c") != "1.0":
+                self.chat_display.insert(tk.END, "\n")
+            self.chat_display.insert(tk.END, f"{date_str}\n", "date_separator")
+            self.last_message_date = date_str
+
+        if sender == "user":
+            bubble_tag = "user_bubble"
+            ts_tag = "timestamp_right"
+            name = "You"
+        else:
+            bubble_tag = "peer_bubble"
+            ts_tag = "timestamp_left"
+            name = self.current_contact if self.current_contact else "Peer"
+
+        # Display message
+        self.chat_display.insert(tk.END, f"{name}\n", bubble_tag)
+        self.chat_display.insert(tk.END, f"{message}\n", bubble_tag)
+        self.chat_display.insert(tk.END, f"{time_str}\n", ts_tag)
+        self.chat_display.insert(tk.END, "\n")
+
+        self.chat_display.see(tk.END)
+        self.chat_display.config(state="disabled")

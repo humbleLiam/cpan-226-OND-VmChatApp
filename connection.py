@@ -64,9 +64,6 @@ class Connection():
         except Exception as e:
             print(f"error -{e}")
 
-    def isConnected(self):
-        return self.connected
-
     def close(self):
         try:
             if self.connection:
@@ -108,10 +105,12 @@ class Connection():
         return False
     def getIp(self):
         try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80))
-            ip = s.getsockname()[0]
-            s.close()
+           # s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            #s.connect(("8.8.8.8", 80))
+           # ip = s.getsockname()[0]
+           # s.close()
+            hostname=socket.gethostname()
+            ip = socket.gethostbyname(hostname)
             return ip
         except:
             return "192.168.100.255"

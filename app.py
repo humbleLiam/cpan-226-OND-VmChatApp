@@ -18,7 +18,8 @@ def main():
 
         def waitForConnection():
             print("DEBUG: waitForConnection running | isConnected =", conn.isConnected)
-            if conn.isConnected():
+            connection = conn.confirmConnection()
+            if connection:
                 app.load_chat_history(peer_ip)
                 print("DEBUG: Connected detected, loading history...")
             else:

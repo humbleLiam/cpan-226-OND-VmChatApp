@@ -22,9 +22,8 @@ def main():
     def waitForConnection():
         connected = conn.confirmConnection()
         if connected:
-
+            app.update_connection_status("Connected")
             app.set_input_enabled(True)
-            app.update
         else:
             root.after(200,waitForConnection)
 

@@ -289,3 +289,30 @@ class ChatGUI:
 
         self.chat_display.see(tk.END)
         self.chat_display.config(state="disabled")
+    
+    def set_input_enabled(self, enabled):
+        state = "normal" if enabled else "disabled"
+        self.message_input.config(state=state)
+        self.send_button.config(state=state)
+
+        if enabled:
+            self.message_input.config(bg="white")
+            self.send_button.config(bg="#10b981")
+        else:
+            self.message_input.config(bg="#e5e7eb")
+            self.send_button.config(bg="#6b7280")
+
+    def update_connection_status(self, status):
+        self.root.tile(f"CHat - {status}")
+
+    def on_contact_select(self,event):
+        selection = self.contact_listbox.curselection()
+        if not selection:
+            return
+        
+        index = selection[0]
+        self.current_contact = self.contacts[index]
+        self.contact_name_label.config(text=self.current_contact)
+        
+        if self.db and self.peer_ip:
+            self.load_chat_history(self.peer_ip)

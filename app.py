@@ -14,11 +14,17 @@ def main():
  
     db.add_contact(peer_ip,f"Peer({peer_ip})")
     app.add_contact(f"Peer ({peer_ip})")
+    app.load_chat_history(peer_ip)
+
+    app.set_input_enabled(False)
+    app.update_connection_status("--Connecting--")
 
     def waitForConnection():
         connected = conn.confirmConnection()
         if connected:
-            app.load_chat_history(peer_ip)
+
+            app.set_input_enabled(True)
+            app.update
         else:
             root.after(200,waitForConnection)
 
@@ -26,7 +32,7 @@ def main():
         db.close()
         conn.close()
         root.destroy()
-        
+
     waitForConnection()
     root.protocol("WM_DELETE_WINDOW",onClosing)
     root.mainloop()

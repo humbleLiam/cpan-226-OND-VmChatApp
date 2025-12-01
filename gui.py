@@ -303,7 +303,7 @@ class ChatGUI:
             self.send_button.config(bg="#6b7280")
 
     def update_connection_status(self, status):
-        self.root.tile(f"CHat - {status}")
+        self.root.title(f"CHat - {status}")
 
     def on_contact_select(self,event):
         selection = self.contact_listbox.curselection()
